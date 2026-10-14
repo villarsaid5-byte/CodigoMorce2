@@ -1,308 +1,103 @@
-// CONVERSOR DE NOTACIONES---------------------------------
-// Verifica si un carácter es un operador
-function esOperador(caracter) {
-    return ["+", "-", "*", "/", "^"].includes(caracter);
-}
-// Obtiene la prioridad de un operador
-function prioridad(operador) {
+import '../css/estilos.css';
+import { morseToText, textToMorse } from './morse.js';
 
-    switch (operador) {
+const form = document.querySelector('#translator-form');
+const source = document.querySelector('#source-text');
+const result = document.querySelector('#result-text');
+const sourceLabel = document.querySelector('#source-label');
+const sourceHint = document.querySelector('#source-hint');
+const resultType = document.querySelector('#result-type');
+const feedback = document.querySelector('#feedback');
+const characterCount = document.querySelector('#character-count');
+const copyButton = document.querySelector('#copy-button');
+const modeButtons = document.querySelectorAll('.mode-button');
+const clearButton = document.querySelector('#clear-button');
 
-        case "+":
-        case "-":
-            return 1;
+let mode = 'text-to-morse';
 
-        case "*":
-        case "/":
-            return 2;
+function setMode(nextMode) {
+	mode = nextMode;
+	const isTextMode = mode === 'text-to-morse';
 
-        case "^":
-            return 3;
+	modeButtons.forEach((button) => {
+		const isActive = button.dataset.mode === mode;
+		button.classList.toggle('is-active', isActive);
+		button.setAttribute('aria-pressed', String(isActive));
+	});
 
-        default:
-            return 0;
-    }
-}
-// INFija -> POSTFIJA---------------------------------------------------------
-function infijaAPostfija(expresion) {
-
-    let salida = [];
-    let pila = [];
-
-    for (let i = 0; i < expresion.length; i++) {
-
-        let caracter = expresion[i];
-
-        // Ignorar espacios
-        if (caracter === " ") {
-            continue;
-        }
-
-
-        // Si es un operando
-        if (/[a-zA-Z0-9]/.test(caracter)) {
-
-            salida.push(caracter);
-        }
-
-
-        // Paréntesis izquierdo
-        else if (caracter === "(") {
-
-            pila.push(caracter);
-        }
-
-
-        // Paréntesis derecho
-        else if (caracter === ")") {
-
-            while (
-                pila.length > 0 &&
-                pila[pila.length - 1] !== "("
-            ) {
-
-                salida.push(pila.pop());
-            }
-
-            if (pila.length === 0) {
-                throw new Error("Los paréntesis no son correctos.");
-            }
-
-            pila.pop();
-        }
-
-
-        // Si es operador
-        else if (esOperador(caracter)) {
-
-            while (
-                pila.length > 0 &&
-                pila[pila.length - 1] !== "(" &&
-                (
-                    prioridad(pila[pila.length - 1]) > prioridad(caracter)
-                    ||
-                    (
-                        prioridad(pila[pila.length - 1]) === prioridad(caracter)
-                        && caracter !== "^"
-                    )
-                )
-            ) {
-
-                salida.push(pila.pop());
-            }
-
-            pila.push(caracter);
-        }
-
-
-        // Carácter desconocido
-        else {
-
-            throw new Error(
-                "Carácter no válido: " + caracter
-            );
-        }
-    }
-
-
-    // Vaciar la pila
-    while (pila.length > 0) {
-
-        if (pila[pila.length - 1] === "(") {
-            throw new Error("Los paréntesis no son correctos.");
-        }
-
-        salida.push(pila.pop());
-    }
-
-    return salida;
+	sourceLabel.textContent = isTextMode ? 'TU MENSAJE' : 'CÓDIGO MORSE';
+	sourceHint.textContent = isTextMode
+		? 'Letras, números y signos de puntuación'
+		: 'Separa letras con espacios y palabras con /';
+	source.placeholder = isTextMode ? 'Escribe aquí…' : 'Ejemplo: .... --- .-.. .-';
+	resultType.textContent = isTextMode ? 'CÓDIGO MORSE' : 'TEXTO DESCIFRADO';
+	result.value = '';
+	feedback.textContent = '';
+	feedback.classList.remove('is-error', 'is-success');
+	copyButton.disabled = true;
 }
 
-// POSTFIJA -> PREFIJA-------------------------------------
-function postfijaAPrefija(postfija) {
-
-    let pila = [];
-
-    for (let elemento of postfija) {
-
-        // Si es operando
-        if (!esOperador(elemento)) {
-
-            pila.push(elemento);
-        }
-
-        // Si es operador
-        else {
-
-            let operando2 = pila.pop();
-            let operando1 = pila.pop();
-
-            if (
-                operando1 === undefined ||
-                operando2 === undefined
-            ) {
-                throw new Error("La expresión no es válida.");
-            }
-
-            let expresion =
-                elemento + " " +
-                operando1 + " " +
-                operando2;
-
-            pila.push(expresion);
-        }
-    }
-
-    if (pila.length !== 1) {
-        throw new Error("La expresión no es válida.");
-    }
-
-    return pila[0];
-}
-// VALIDAR EXPRESIÓN-----------------------------------------------
-function validarExpresion(expresion) {
-
-    let parentesis = 0;
-
-    for (let caracter of expresion) {
-
-        if (caracter === "(") {
-            parentesis++;
-        }
-
-        if (caracter === ")") {
-            parentesis--;
-
-            if (parentesis < 0) {
-                return false;
-            }
-        }
-    }
-
-    return parentesis === 0;
+function updateCharacterCount() {
+	characterCount.textContent = `${source.value.length} / 1000`;
 }
 
-// CONVERTIR-----------------------------------------------
-function convertir() {
+modeButtons.forEach((button) => {
+	button.addEventListener('click', () => setMode(button.dataset.mode));
+});
 
-    const input =
-        document.getElementById("expresion");
+source.addEventListener('input', () => {
+	updateCharacterCount();
+	result.value = '';
+	feedback.textContent = '';
+	feedback.classList.remove('is-error', 'is-success');
+	copyButton.disabled = true;
+});
 
-    const contenedor =
-        document.getElementById("arbol");
+source.addEventListener('keydown', (event) => {
+	if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+		event.preventDefault();
+		form.requestSubmit();
+	}
+});
 
-    let expresion =
-        input.value.trim();
+form.addEventListener('submit', (event) => {
+	event.preventDefault();
 
+	try {
+		const convert = mode === 'text-to-morse' ? textToMorse : morseToText;
+		result.value = convert(source.value);
+		feedback.textContent = 'Traducción completada.';
+		feedback.classList.remove('is-error');
+		feedback.classList.add('is-success');
+		copyButton.disabled = false;
+	} catch (error) {
+		result.value = '';
+		feedback.textContent = error.message;
+		feedback.classList.remove('is-success');
+		feedback.classList.add('is-error');
+		copyButton.disabled = true;
+	}
+});
 
-    // Limpiar resultados
-    contenedor.innerHTML = "";
+clearButton.addEventListener('click', () => {
+	source.value = '';
+	result.value = '';
+	feedback.textContent = '';
+	feedback.classList.remove('is-error', 'is-success');
+	copyButton.disabled = true;
+	updateCharacterCount();
+	source.focus();
+});
 
-    // Verificar que no esté vacío
-    if (expresion === "") {
-
-        contenedor.innerHTML = `
-            <div class="alert alert-warning">
-                Ingresa una expresión.
-            </div>
-        `;
-
-        return;
-    }
-
-    // Verificar paréntesis
-    if (!validarExpresion(expresion)) {
-
-        contenedor.innerHTML = `
-            <div class="alert alert-danger">
-                Los paréntesis de la expresión no son correctos.
-            </div>
-        `;
-
-        return;
-    }
-
-
-    try {
-
-        // Convertir a postfija
-        const postfija =
-            infijaAPostfija(expresion);
-
-
-        // Convertir postfija a prefija
-        const prefija =
-            postfijaAPrefija(postfija);
-
-        // MOSTRAR RESULTADOS----------------------------------------------
-        contenedor.innerHTML = `
-
-            <div class="card">
-
-                <div class="card-header">
-                    <h3>Resultados</h3>
-                </div>
-
-                <div class="card-body">
-
-                    <div class="mb-3">
-                        <h5>Infija</h5>
-
-                        <div class="alert alert-secondary">
-                            ${expresion}
-                        </div>
-                    </div>
-
-
-                    <div class="mb-3">
-                        <h5>Prefija</h5>
-
-                        <div class="alert alert-primary">
-                            ${prefija}
-                        </div>
-                    </div>
-
-
-                    <div class="mb-3">
-                        <h5>Postfija</h5>
-
-                        <div class="alert alert-success">
-                            ${postfija.join(" ")}
-                        </div>
-                    </div>
-
-                </div>
-
-            </div>
-
-        `;
-
-    } catch (error) {
-
-        contenedor.innerHTML = `
-
-            <div class="alert alert-danger">
-                <strong>Error:</strong>
-                ${error.message}
-            </div>
-
-        `;
-    }
-}
-
-// BOTÓN----------------------------------------------
-document
-    .getElementById("btnConvertir")
-    .addEventListener("click", convertir);
-
-
-// Permitir convertir presionando ENTER
-document
-    .getElementById("expresion")
-    .addEventListener("keydown", function(event) {
-
-        if (event.key === "Enter") {
-            convertir();
-        }
-
-    });
+copyButton.addEventListener('click', async () => {
+	try {
+		await navigator.clipboard.writeText(result.value);
+		feedback.textContent = 'Resultado copiado al portapapeles.';
+		feedback.classList.remove('is-error');
+		feedback.classList.add('is-success');
+	} catch {
+		feedback.textContent = 'No se pudo acceder al portapapeles en este navegador.';
+		feedback.classList.remove('is-success');
+		feedback.classList.add('is-error');
+	}
+});

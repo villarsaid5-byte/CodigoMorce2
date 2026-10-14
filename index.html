@@ -1,37 +1,82 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notaciones de Expresiones</title>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="theme-color" content="#f4f7f5">
+		<meta name="description" content="Traduce texto a código Morse y código Morse a texto de forma rápida y sencilla.">
+		<title>Punto y Raya | Traductor Morse</title>
+	</head>
+	<body>
+		<header class="site-header">
+			<a class="wordmark" href="#inicio" aria-label="Punto y Raya, inicio">
+				<span class="wordmark-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+				<span>PUNTO <span class="wordmark-amp">&amp;</span> RAYA</span>
+			</a>
+			<span class="header-note"><span class="live-dot"></span> TRADUCTOR DE SEÑALES <span class="header-index">N.º 01</span></span>
+		</header>
 
-    <link rel="stylesheet" href="./public/css/b5.css">
-    <link rel="stylesheet" href="./public/css/main.css">
-    <script src="./public/js/b5.js"></script>
-    <script src="./public/js/poper.js"></script>
-    <script src="./public/js/leader.js"></script>
-</head>
+		<main id="inicio" class="page-shell">
+			<section class="intro" aria-labelledby="page-title">
+				<p class="eyebrow">COMUNICACIÓN · CÓDIGO INTERNACIONAL</p>
+				<h1 id="page-title">Traductor Morse<span>.</span></h1>
+				<p class="intro-copy">Una idea, dos formas de decirla. Escribe tu mensaje y deja que los puntos y las rayas hagan el resto.</p>
+			</section>
 
-<body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-12 text-center mb-3">
-                <h1>Notaciones de Expresiones</h1>
-                <hr>
-            </div>
-            <div class="col-12">
-                <div class="row">
-                    <div class="col">
-                        <input id="expresion" class="form-control" type="text" placeholder="Ingresa una operación, ejemplo: A+B*C">
-                    </div>
-                </div>
-            </div>
-            <div class="col-12 mt-3">
-                <button id="btnConvertir" class="btn btn-primary" type="button"> Convertir </button>
-            </div>
-            <div class="col-12 mt-4" id="arbol"></div>
-        </div>
-    </div>
-    <script src="./public/js/index.js"></script>
-</body>
+			<section class="translator" aria-label="Conversor de texto y código Morse">
+				<div class="translator-topline">
+					<span class="section-label"><span class="section-number">01</span> CONVERSIÓN</span>
+					<span class="status-label"><span class="status-light"></span> LISTO PARA TRANSMITIR</span>
+				</div>
+
+				<div class="mode-row">
+					<span class="field-label" id="mode-label">DIRECCIÓN</span>
+					<div class="mode-switch" role="group" aria-labelledby="mode-label">
+						<button class="mode-button is-active" type="button" data-mode="text-to-morse" aria-pressed="true">Texto <span aria-hidden="true">→</span> Morse</button>
+						<button class="mode-button" type="button" data-mode="morse-to-text" aria-pressed="false">Morse <span aria-hidden="true">→</span> texto</button>
+					</div>
+				</div>
+
+				<form id="translator-form" novalidate>
+					<div class="editor-grid">
+						<div class="editor-column">
+							<label class="field-label" for="source-text" id="source-label">TU MENSAJE</label>
+							<textarea id="source-text" name="source" rows="5" maxlength="1000" placeholder="Escribe aquí…" spellcheck="false" aria-describedby="source-hint feedback" required></textarea>
+							<div class="field-meta">
+								<span id="source-hint">Letras, números y signos de puntuación</span>
+								<span id="character-count" aria-live="polite">0 / 1000</span>
+							</div>
+						</div>
+
+						<div class="editor-column output-column">
+							<label class="field-label" for="result-text">RESULTADO</label>
+							<textarea id="result-text" name="result" rows="5" placeholder="Tu traducción aparecerá aquí…" readonly aria-live="polite"></textarea>
+							<div class="field-meta output-meta">
+								<span id="result-type">CÓDIGO MORSE</span>
+								<button id="copy-button" class="copy-button" type="button" disabled>Copiar resultado</button>
+							</div>
+						</div>
+					</div>
+
+					<p id="feedback" class="feedback" role="status" aria-live="polite"></p>
+					<div class="form-actions">
+						<button class="convert-button" type="submit"><span>Convertir</span><span class="button-arrow" aria-hidden="true">↗</span></button>
+						<button id="clear-button" class="clear-button" type="button">Limpiar</button>
+						<span class="shortcut-note"><span aria-hidden="true">⌘ ↵</span> Ctrl / ⌘ + Enter</span>
+					</div>
+				</form>
+
+				<footer class="translator-footer">
+					<span>MORSE INTERNACIONAL</span>
+					<span class="footer-divider" aria-hidden="true"></span>
+					<span>LOS ESPACIOS ENTRE PALABRAS SE MARCAN CON /</span>
+				</footer>
+			</section>
+
+			<footer class="page-footer">
+				<span>PARA MENSAJES QUE VIAJAN MÁS LEJOS.</span>
+				<span class="signal-decoration" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span>
+			</footer>
+		</main>
+	</body>
 </html>
